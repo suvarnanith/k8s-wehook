@@ -1,0 +1,57 @@
+# Requires cert-manager (https://cert-manager.io) installed in the cluster.
+#
+
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: webhook-selfsigned
+  namespace: webhook-system
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: webhook-ca
+  namespace: webhook-system
+spec:
+  isCA: true
+  secretName: webhook-ca-key-pair
+  commonName: webhook-ca
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 10h
+  renewBefore: 1h
+  issuerRef:
+    name: webhook-selfsigned
+    kind: Issuer
+    group: cert-manager.io
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: webhook-ca-issuer
+  namespace: webhook-system
+spec:
+  ca:
+    secretName: webhook-ca-key-pair
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: webhook-cert
+  namespace: webhook-system
+spec:
+  secretName: webhook-tls
+  duration: 2160h
+  renewBefore: 360h
+  commonName: webhook.webhook-system.svc
+  dnsNames:
+  - webhook.webhook-system.svc
+  - webhook.webhook-system.svc.cluster.local
+  issuerRef:
+    name: webhook-ca-issuer # Use CA issuer
+    kind: Issuer

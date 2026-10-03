@@ -1,0 +1,25 @@
+# https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/
+# caBundle is populated automatically by cert-manager's CA injector via the
+# annotation below, sourced from the webhook-serving-cert Certificate's Secret.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validate-pod-resources
+  annotations:
+    cert-manager.io/inject-ca-from: webhook-system/webhook-cert
+webhooks:
+  - name: validate-pod-resources.webhook-system.svc
+    admissionReviewVersions: ["v1"]
+    sideEffects: None
+    rules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+    failurePolicy: Fail
+    clientConfig:
+      service:
+        name: webhook
+        namespace: webhook-system
+        path: /validate
+        port: 443
