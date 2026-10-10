@@ -22,7 +22,7 @@ spec:
   privateKey:
     algorithm: RSA
     size: 2048
-  duration: 10h
+  duration: 43800h
   renewBefore: 1h
   issuerRef:
     name: webhook-selfsigned
